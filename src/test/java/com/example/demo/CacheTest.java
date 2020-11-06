@@ -12,7 +12,7 @@ public class CacheTest {
     public void LRU_Test() {
 
         //arrange
-        int capacity = 3;
+        int capacity = 3; // This is the cache memory capasity
         Cache cache = new Cache();
         Common common = cache.setCache(Cache.Strategy.LRU, capacity);
 
