@@ -2,7 +2,7 @@ package com.example.demo.storages;
 
 import java.util.Hashtable;
 
-public class LRU implements Common{
+public class LRU implements Common {
 
     private class Node {
         Node prev;
@@ -19,11 +19,11 @@ public class LRU implements Common{
     }
 
     private int capacity;
-    private Hashtable<Integer, Node> hs = new Hashtable<>();
+    private Hashtable<Integer, Node> index = new Hashtable<>();
     private Node head = new Node(-1, -1);
     private Node tail = new Node(-1, -1);
 
-    // @param capacity, an integer
+    // @param capacity
     public LRU(int capacity) {
 
         this.capacity = capacity;
@@ -34,46 +34,55 @@ public class LRU implements Common{
     @Override
     public int get(int key) {
 
-        if (!hs.containsKey(key)) {
-            return -1;
+        if (index.containsKey(key)) {
+            Node node = index.get(key);
+            move_to_head(node);
+            return node.value;
         }
 
-        // remove current node
-        Node current = hs.get(key);
-        current.prev.next = current.next;
-        current.next.prev = current.prev;
-
-        // move current node to tail
-        move_to_tail(current);
-
-        return hs.get(key).value;
-
+        return -1;
     }
 
     @Override
     public void set(int key, int value) {
 
         if (get(key) != -1) {
-            hs.get(key).value = value;
-            return;
-        }
-
-        if (hs.size() == capacity) {
-            hs.remove(head.next.key);
-            head.next = head.next.next;
-            head.next.prev = head;
+            index.get(key).value = value;
+            Node moveNode = index.get(key);
+            move_to_head(moveNode);
         }
 
         Node insert = new Node(key, value);
-        hs.put(key, insert);
-        move_to_tail(insert);
+        insert.next = head.next;
+        insert.prev = head;
+        head.next.prev = insert;
+        head.next = insert;
+
+        index.put(key,insert);
+
+        if (index.size() > capacity) {
+            removeTail();
+        }
+
     }
 
-    private void move_to_tail(Node current) {
-        current.prev = tail.prev;
-        tail.prev = current;
-        current.prev.next = current;
-        current.next = tail;
+    private void move_to_head(Node current) {
+        current.prev.next = current.next;
+        current.next.prev = current.prev;
+        current.next = head.next;
+        current.prev = head;
+        head.next.prev = current;
+        head.next = current;
     }
+
+    private void removeTail() {
+        Node toRemove = tail.prev;
+        toRemove.prev.next = tail;
+        tail.prev = toRemove.prev;
+        toRemove.prev = null;
+        toRemove.next = null;
+        index.remove(toRemove.key);
+    }
+
 
 }

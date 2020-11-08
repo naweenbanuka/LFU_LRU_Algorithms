@@ -7,8 +7,8 @@ public class LFU implements Common{
     private int capacity;
     //Save cache access frequency and time
     private final Map<Integer, HitRate> cache = new HashMap();
-    //Save cached KV
-    private final Map<Integer, Integer> KV = new HashMap();
+    //Save cached frequency
+    private final Map<Integer, Integer> frequency = new HashMap();
 
 
     public LFU(int capacity) {
@@ -18,11 +18,11 @@ public class LFU implements Common{
 
     @Override
     public void set(int key, int value) {
-        Integer v = KV.get(key);
+        Integer v = frequency.get(key);
         if (v == null) {
             if (cache.size() == capacity) {
                 Integer k = getKickedKey();
-                KV.remove(k);
+                frequency.remove(k);
                 cache.remove(k);
             }
             cache.put(key, new HitRate(key, 1, System.nanoTime()));
@@ -31,12 +31,12 @@ public class LFU implements Common{
             hitRate.hitCount += 1;
             hitRate.lastTime = System.nanoTime();
         }
-        KV.put(key, value);
+        frequency.put(key, value);
     }
 
     @Override
     public int get(int key) {
-        Integer v = KV.get(key);
+        Integer v = frequency.get(key);
         if (v != null) {
             HitRate hitRate = cache.get(key);
             hitRate.hitCount += 1;
